@@ -1,0 +1,39 @@
+---
+# tasks file for mylb
+- name: installing haproxy
+  yum:
+    name: haproxy
+    state: present
+
+- name: starting service of LB
+  service:
+    name: haproxy
+    state: started
+    enabled: yes
+
+- name: installing firewall
+  yum: 
+    name: firewalld
+    state: present
+
+- name: start service of firewall
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: enable port
+  firewalld:
+    service: "{{ item }}"
+    state: enabled
+    immediate: yes
+    permanent: yes
+  loop:
+    - http
+    - https
+- name: updating config file
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+  notify: restart lb
+
